@@ -24,10 +24,10 @@ import { useState, useEffect } from "react";
 
 const PRIMARY_NAV_ITEMS = [
   { label: "Command", href: "/", icon: Zap, description: "Overview & stats" },
-  { label: "Vault", href: "/vault", icon: Shield, description: "Firearms inventory" },
+  { label: "Vault", href: "/vault", icon: Shield, description: "ASG inventory" },
   { label: "Builds", href: "/builds", icon: Layers, description: "Build configurations" },
   { label: "Accessories", href: "/accessories", icon: Crosshair, description: "Parts & attachments" },
-  { label: "Ammo", href: "/ammo", icon: Target, description: "Ammunition storage" },
+  { label: "BBs", href: "/bbs", icon: Target, description: "BBs storage" },
 ] as const;
 
 const RANGE_CHILD_ITEMS = [
