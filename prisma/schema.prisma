@@ -8,17 +8,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─── FIREARMS ─────────────────────────────────────────────────
+// ─── REPLICHE ASG ──────────────────────────────────────────────
 
 model Firearm {
   id              String   @id @default(cuid())
   name            String
   manufacturer    String
   model           String
+  // bbWeight: "0.20g" | "0.25g" | "0.28g" | "0.30g" | "0.32g" | "0.36g" | "0.40g" | "0.43g" | "0.45g"
   caliber             String
   compatibleCalibers  String?
   serialNumber    String   @unique
-  // FirearmType: PISTOL | RIFLE | SHOTGUN | SMG | PCC | REVOLVER | BOLT_ACTION | LEVER_ACTION
+  // type: AEG | AEP | GBB_PISTOLA | GBB_FUCILE | HPA | NGRS | GAS_NBB | SPRINGER | DMRSNIPER
   type            String
   acquisitionDate DateTime
   purchasePrice   Float?
@@ -28,8 +29,8 @@ model Firearm {
   // imageSource: "uploaded" | "google_cse" | "seed" | "url"
   imageSource     String?
 
-  // Maintenance tracking
-  lastMaintenanceDate DateTime?
+  // Manutenzione replica
+  lastMaintenanceDate     DateTime?
   maintenanceIntervalDays Int?
 
   builds          Build[]
@@ -43,7 +44,7 @@ model Firearm {
   @@index([type])
 }
 
-// ─── BUILDS ───────────────────────────────────────────────────
+// ─── LOADOUT / BUILD ──────────────────────────────────────────
 
 model Build {
   id          String      @id @default(cuid())
@@ -68,14 +69,14 @@ model BuildSlot {
   id          String     @id @default(cuid())
   buildId     String
   build       Build      @relation(fields: [buildId], references: [id], onDelete: Cascade)
-  // SlotType: MUZZLE | BARREL | HANDGUARD | STOCK | BUFFER_TUBE | GRIP | OPTIC | OPTIC_MOUNT |
-  //           UNDERBARREL | MAGAZINE | LIGHT | LASER | CHARGING_HANDLE | TRIGGER |
-  //           LOWER_RECEIVER | UPPER_RECEIVER | SLIDE | FRAME | SUPPRESSOR | BIPOD | SLING | COMPENSATOR
+  // SlotType: CANNA | HOP_UP | SILENZIATORE | CALCIO | IMPUGNATURA | OTTICA | MOUNT_OTTICA |
+  //           TORCIA | LASER | BIPOD | TRACOLLA | CARICATORE | GRILLETTO | MOSFET |
+  //           BATTERIA | REGOLATORE_HPA | TUBO_HPA | GEARBOX | MOTORE | COMPENSATORE
   slotType    String
   accessoryId String?
   accessory   Accessory? @relation(fields: [accessoryId], references: [id], onDelete: SetNull)
 
-  // Position on the weapon canvas (percentage-based, 0-100)
+  // Posizione sul canvas della replica (percentuale 0-100)
   positionX   Float?
   positionY   Float?
   scaleX      Float?     @default(1.0)
@@ -87,7 +88,7 @@ model BuildSlot {
   @@index([accessoryId])
 }
 
-// ─── ACCESSORIES ──────────────────────────────────────────────
+// ─── ACCESSORI ────────────────────────────────────────────────
 
 model Accessory {
   id                     String          @id @default(cuid())
@@ -95,7 +96,7 @@ model Accessory {
   manufacturer           String
   model                  String?
   serialNumber           String?
-  // type matches SlotType values above
+  // type corrisponde ai valori SlotType sopra
   type                   String
   caliber                String?
   purchasePrice          Float?
@@ -104,19 +105,21 @@ model Accessory {
   imageUrl               String?
   imageSource            String?
 
-  // Round count persists with the accessory across all builds
+  // Contatore BBS sparate — persiste attraverso tutti i loadout
   roundCount             Int             @default(0)
   roundCountLogs         RoundCountLog[]
 
   buildSlots             BuildSlot[]
   documents              Document[]
 
-  // Comma-separated compatible values, e.g. "RIFLE,SMG"
+  // Tipi di replica compatibili, separati da virgola, es. "AEG,HPA"
   compatibleFirearmTypes String?
+  // Grammature BBS compatibili, es. "0.20g,0.25g,0.28g"
   compatibleCalibers     String?
 
-  // Battery tracking
+  // Tracciamento batteria (per AEG/AEP)
   hasBattery             Boolean         @default(false)
+  // batteryType: "LiPo 7.4V" | "LiPo 11.1V" | "NiMH 8.4V" | "NiMH 9.6V" | "Li-Ion" | "Altra"
   batteryType            String?
   lastBatteryChangeDate  DateTime?
   replacementIntervalDays Int?
@@ -129,19 +132,19 @@ model Accessory {
 }
 
 model Document {
-  id         String    @id @default(cuid())
-  name       String
-  type       String
-  fileUrl    String
-  fileSize   Int?
-  mimeType   String?
-  notes      String?
-  firearmId  String?
+  id          String     @id @default(cuid())
+  name        String
+  type        String
+  fileUrl     String
+  fileSize    Int?
+  mimeType    String?
+  notes       String?
+  firearmId   String?
   accessoryId String?
-  firearm    Firearm?  @relation(fields: [firearmId], references: [id], onDelete: SetNull)
-  accessory  Accessory? @relation(fields: [accessoryId], references: [id], onDelete: SetNull)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  firearm     Firearm?   @relation(fields: [firearmId], references: [id], onDelete: SetNull)
+  accessory   Accessory? @relation(fields: [accessoryId], references: [id], onDelete: SetNull)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
   @@index([firearmId])
   @@index([accessoryId])
@@ -163,17 +166,19 @@ model RoundCountLog {
   @@index([loggedAt])
 }
 
-// ─── AMMO ─────────────────────────────────────────────────────
+// ─── STOCK BBS ────────────────────────────────────────────────
 
 model AmmoStock {
   id              String            @id @default(cuid())
+  // bbWeight: "0.20g" | "0.25g" | "0.28g" | "0.30g" | "0.32g" | "0.36g" | "0.40g" | "0.43g" | "0.45g"
   caliber         String
   brand           String
   grainWeight     Float?
-  // bulletType: "FMJ" | "HP" | "OTM" | "Frangible" | "Tracer" | "Subsonic" | "Other"
+  // bbType: "Standard" | "Bio" | "Tracciante" | "Bio Tracciante"
   bulletType      String?
   quantity        Int               @default(0)
   purchasePrice   Float?
+  // pricePerBB calcolato automaticamente
   pricePerRound   Float?
   purchaseDate    DateTime?
   storageLocation String?
@@ -189,16 +194,18 @@ model AmmoStock {
   @@index([caliber])
 }
 
-// ─── RANGE SESSIONS ──────────────────────────────────────────
+// ─── SESSIONI DI GIOCO / FIELD ────────────────────────────────
 
 model RangeSession {
   id            String                 @id @default(cuid())
   sessionDate   DateTime
+  // location: nome del campo o area di gioco
   location      String
   firearmId     String
   firearm       Firearm                @relation(fields: [firearmId], references: [id], onDelete: Cascade)
   buildId       String?
   build         Build?                 @relation(fields: [buildId], references: [id], onDelete: SetNull)
+  // roundsFired: numero di BBS sparate nella sessione
   roundsFired   Int
   notes         String?
 
@@ -219,6 +226,7 @@ model RangeSessionAmmoLink {
   rangeSession   RangeSession @relation(fields: [rangeSessionId], references: [id], onDelete: Cascade)
   ammoStockId    String
   ammoStock      AmmoStock    @relation(fields: [ammoStockId], references: [id], onDelete: Cascade)
+  // roundsUsed: BBS consumate in questa sessione
   roundsUsed     Int
   createdAt      DateTime     @default(now())
 
@@ -247,22 +255,22 @@ model SessionDrill {
 }
 
 model AmmoTransaction {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   stockId      String
   stock        AmmoStock @relation(fields: [stockId], references: [id], onDelete: Cascade)
-  // type: PURCHASE | RANGE_USE | TRANSFER_OUT | INVENTORY_CORRECTION | EXPENDED
+  // type: ACQUISTO | USO_FIELD | TRASFERIMENTO | CORREZIONE_INVENTARIO | CONSUMATE
   type         String
   quantity     Int
   previousQty  Int
   newQty       Int
   note         String?
-  transactedAt DateTime @default(now())
+  transactedAt DateTime  @default(now())
 
   @@index([stockId])
   @@index([transactedAt])
 }
 
-// ─── IMAGE CACHE ──────────────────────────────────────────────
+// ─── CACHE IMMAGINI ───────────────────────────────────────────
 
 model ImageCache {
   id          String   @id @default(cuid())
@@ -280,7 +288,7 @@ model ImageCache {
   @@index([entityType, entityId])
 }
 
-// ─── SETTINGS ─────────────────────────────────────────────────
+// ─── IMPOSTAZIONI APP ─────────────────────────────────────────
 
 model AppSettings {
   id                      String   @id @default("singleton")
@@ -292,7 +300,7 @@ model AppSettings {
   autoBackupCadence       String   @default("weekly")
   backupDestinationPath   String?
   manualLanHost           String?
-  defaultCurrency         String   @default("USD")
+  defaultCurrency         String   @default("EUR")
   appPassword             String?
   defaultAmmoAlertThreshold Int?
   createdAt               DateTime @default(now())
