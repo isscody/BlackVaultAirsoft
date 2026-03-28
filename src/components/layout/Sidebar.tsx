@@ -79,7 +79,7 @@ export function Sidebar({ mobileOnly = false, mobileOpen = false, onMobileClose 
         {!collapsed && (
           <div className="overflow-hidden flex-1 min-w-0">
             <p className="text-xs font-bold text-vault-text tracking-widest uppercase leading-none">BlackVault</p>
-            <p className="text-[10px] text-vault-text-faint tracking-wider uppercase mt-0.5">Armory Platform</p>
+            <p className="text-[10px] text-vault-text-faint tracking-wider uppercase mt-0.5">Airsoft Platform</p>
           </div>
         )}
         {onMobileClose && (
