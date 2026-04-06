@@ -9,7 +9,7 @@ A self-hosted, local-only web app for tracking firearms, accessories, and range 
 ![Dashboard](docs/screenshots/dashboard.png)
 ![Vault](docs/screenshots/vault.png)
 ![Range Session](docs/screenshots/range.png)
-![Settings](docs/screenshots/settings.png)
+![Settings](docs/screenshots/bbs.png)
 
 ---
 
